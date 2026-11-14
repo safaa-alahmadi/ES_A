@@ -140,9 +140,7 @@ developer-experience-aware prompting as first-class agents.
    discussion/consensus mechanism.
 
 ## The five agents
-
-هذا الفريمورك يعالج الفجوتين عبر خمسة agents متعاونة، كل واحد مسؤول عن جزء
-محدد، وبيتواصلوا مع بعض برسائل JSON صريحة ومسجّلة (the fifth agent is new in
+ (the fifth agent is new in
 the NeoDataset addendum; the original four are untouched):
 
 | # | Agent | Module | Message in → out |
@@ -492,18 +490,6 @@ estimation_assistant/
 └── tests/                          # pytest, no network / no API key
     ├── test_experiment.py          # NEW: split / calibration / metrics / cache / CLI, fully offline
     └── test_metrics.py             # NEW: hand-computed metric + bootstrap tests
-```
 
-## Running tests
-
-```
-pytest
-```
-
-One test module per agent (happy path, edge cases, malformed LLM replies), one
-for the orchestrator's full message chain (with `FakeLlmClient`), one for
-`llm_client.py` response parsing, and two for the experiment framework
-(`test_metrics.py`, `test_experiment.py`) — all offline, no network or API key.
-The suite is **145 tests**.
 
 
