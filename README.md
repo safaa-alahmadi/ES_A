@@ -111,16 +111,6 @@ Estimation Accuracy(UserStory) = Actual_Effort(UserStory) / Estimated_Effort(Use
 **Results:** LLM (experimental) group **16% average accuracy** (SD 9.2%);
 human/conventional (control) group **60% average accuracy** (SD 24.5%).
 
-بعد تحليل الورقة البحثية التي استخدمت GitLab Duo لتقدير مهام الـ Agile، ظهرت
-فجوتان رئيسيتان أثرتا بشكل واضح على دقة التقدير، حيث كانت دقة الـ LLM حوالي
-16% مقارنة بـ 60% للبشر.
-
-**الفجوة الأولى:** الأداة كانت تقدّر الوقت بدون معرفة خبرة المطوّر أو مدى
-معرفته بالكود، مما يجعل التقدير غير واقعي.
-
-**الفجوة الثانية:** عدم وجود آلية للتعلّم من الأخطاء السابقة، حيث لا يتم
-تعديل التقديرات المستقبلية بناءً على النتائج الفعلية.
-
 **English:** *Gap 1* — the tool estimated effort with no knowledge of developer
 experience or code familiarity, making estimates unrealistic. *Gap 2* — there
 was no mechanism to learn from past errors; future estimates were never
