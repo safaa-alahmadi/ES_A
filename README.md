@@ -100,10 +100,6 @@ python gui.py
 from a Controlled Experiment." *Applied Sciences*, 14(24), 12006.
 https://doi.org/10.3390/app142412006
 
-The paper had development teams use the LLM chatbot GitLab Duo to split 8 user
-stories into tasks and estimate effort in hours, against a human control group
-using planning poker / analogy-based estimation. Accuracy was measured as:
-
 ```
 Estimation Accuracy(UserStory) = Actual_Effort(UserStory) / Estimated_Effort(UserStory) × 100%
 ```
@@ -111,7 +107,7 @@ Estimation Accuracy(UserStory) = Actual_Effort(UserStory) / Estimated_Effort(Use
 **Results:** LLM (experimental) group **16% average accuracy** (SD 9.2%);
 human/conventional (control) group **60% average accuracy** (SD 24.5%).
 
-**English:** *Gap 1* — the tool estimated effort with no knowledge of developer
+ *Gap 1* — the tool estimated effort with no knowledge of developer
 experience or code familiarity, making estimates unrealistic. *Gap 2* — there
 was no mechanism to learn from past errors; future estimates were never
 adjusted based on actual outcomes.
@@ -126,7 +122,7 @@ and with human developers to reach a *consensus* estimate; it does **not**
 implement automatic historical calibration or explicit
 developer-experience-aware prompting as first-class agents.
 
-**Our original contribution** is specifically:
+** original contribution** is specifically:
 
 1. A dedicated **Calibration Agent** that automatically learns a correction
    ratio from historical (estimated vs. actual) records per developer/team and
@@ -166,16 +162,6 @@ the NeoDataset addendum; the original four are untouched):
 - **Evaluation Agent** — once actual effort is recorded, compares calibrated
   (and raw) estimates against actual effort using the paper's exact formula
   and compares against the paper's baseline numbers (16%/60%).
-
-### Communication protocol (explicit and logged)
-
-A hand-built message-passing protocol — **no** AutoGen/CrewAI/LangGraph.
-Message dataclasses live in `estimation_assistant/messages.py`:
-`DeveloperContextMessage`, `EstimationMessage`, `CalibrationMessage`,
-`EvaluationMessage`, plus the new `LearningUpdateMessage` (`run_number`,
-`mean_accuracy_this_run`, `updated_ratios`, `timestamp`). Every agent, on
-both receiving and sending, logs the message as a JSON line to
-`output/agent_messages.log` **and** prints a short console line such as:
 
 ```
 [DeveloperContextAgent -> EstimationAgent] (send) user_story_id=us1
@@ -232,39 +218,6 @@ python -m estimation_assistant learn-over-time --runs 5
 python -m estimation_assistant report --neodataset
 ```
 
-- `scripts/generate_sample.py` loads the full CSV once (pandas `hf://`,
-  HTTPS fallback), drops rows with missing/zero story points, and draws a
-  fixed reproducible sample (seed 42) of **40 stories — 5 from each of 8
-  different projects** into `data/user_stories/neodataset_sample.json`, plus
-  `data/actuals_neodataset.json` (`{story_id: story_points}`). Both files are
-  committed, so everything below works offline.
-- `run-neodataset` runs the full five-agent pipeline over those 40 stories
-  (story-points prompt, Fibonacci scale 1,2,3,5,8,13,21), records the real
-  story-point actuals (store-only, like `demo`), evaluates with `(sp)` labels,
-  then applies one Learning Agent update. The original `demo` path is
-  untouched — both data sources stay usable side by side (separate index
-  `output/estimates_index_neodataset.json` and report
-  `output/comparison_report_neodataset.md`, so they never mix).
-- `learn-over-time --runs N` (default 5) repeats that run N times **without
-  resetting** `data/learning_state.json` or `data/calibration_history.json`,
-  then writes `output/learning_curve.md` (run → mean calibrated accuracy,
-  reported exactly as recorded — never smoothed).
-- The **Learning Agent** (`learning_agent.py`) keeps, per project, an
-  exponentially-weighted moving average (EWMA, default alpha = 0.3: each new
-  run's observed `actual/raw` ratio blends 30% into the running average, 70%
-  stays on prior history) plus the per-run mean-accuracy trend line, and
-  appends one EWMA-valued `CalibrationRecord` per project per run — blending,
-  never wholesale replacement — so the unchanged Calibration Agent picks the
-  refined ratios up on the next run.
-- **Units caveat:** the reference paper measured effort in hours; NeoDataset
-  measures effort in Story Points — no conversion is applied in either
-  direction. The accuracy formula (`actual / estimated × 100%`) is
-  unit-agnostic and unchanged; every NeoDataset result (console, Markdown
-  report, Word report) is relabelled to story points and carries the note:
-  *"Figures from the NeoDataset run are in story points, not hours; they are
-  comparable to the reference study's 16%/60% baselines only as accuracy
-  ratios, not as absolute effort units."*
-
 ## Running the experiments
 
 Beyond the demo, the project ships a **held-out ablation experiment** that
@@ -291,13 +244,6 @@ overridden with `--models id1,id2,...`:
 | `openai/gpt-oss-20b` | small, fastest of the three |
 | `openai/gpt-oss-120b` | large, usually the most accurate |
 | `qwen/qwen3.8-27b` | general reasoning model |
-
-`llama-3.3-70b-versatile` was the original third model, but Groq now answers
-`404 model_not_found` for it (`does not exist or you do not have access to
-it`) on the account used for the recorded run, so it has been replaced by
-`qwen/qwen3.8-27b`, which is available and parses the estimation prompts
-correctly. Model availability is account- and time-specific: list what your
-own key can use with
 
 ```
 python -c "from groq import Groq; import os; from dotenv import load_dotenv; load_dotenv(); \
@@ -437,9 +383,7 @@ colour-coded measurement history, metric/imperial unit toggle, product graph
 view, import data from offline sensor, temperature trend graph per product,
 multi-language support (EN/DE/SI).
 
-**Note:** synthetic demo data inspired by the paper's setup — **not** their
-real dataset (available only on request). Absolute numbers demonstrate the
-*method*, they are **not a reproduction** of the original experiment.
+
 
 ## Project layout
 
