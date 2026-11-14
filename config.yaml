@@ -1,0 +1,66 @@
+model: openai/gpt-oss-20b
+temperature: 0.2
+max_tokens: 4096
+timeout: 60
+max_retries: 5
+retry_delay_seconds: 1
+
+# Models compared by `python -m estimation_assistant experiment` (the Groq
+# model id list; an explicit --models flag on the CLI overrides this).
+#
+# NOTE: `llama-3.3-70b-versatile` was the original third model, but it was
+# decommissioned / not accessible on the Groq account used for the recorded
+# run (404 model_not_found). It has been replaced by `qwen/qwen3.8-27b`, which
+# is available and parses the estimation prompts correctly. If your account
+# still has access to llama-3.3-70b-versatile, put it back here or pass it via
+# `--models` on the CLI; `client.models.list()` shows what your key can use.
+models:
+  - openai/gpt-oss-20b
+  - openai/gpt-oss-120b
+  - qwen/qwen3.8-27b
+
+# Ratio aggregation for calibration / ratio-error reporting: "median" (default,
+# robust to the few very large outliers in the story-point ground truth) or
+# "mean". Used both by the experiment and by aggregate_ratios/ratio_summary.
+ratio_stat: median
+
+# Hard cap on user-story description characters sent to the LLM. The NeoDataset
+# sample contains descriptions up to ~22k chars; 4000 keeps prompts bounded and
+# comparable across configs while preserving the title and the intent of the
+# story. Longer text is truncated with an explicit "…[truncated]" marker.
+max_description_chars: 4000
+
+# Ablation experiment settings. All results are computed from real LLM replies
+# (never fabricated); values here are fixed *before* results are seen, so
+# changing them after a run invalidates that run as a comparison baseline.
+experiment:
+  seed: 42                  # split + sampling seed (held-out protocol)
+  bootstrap_seed: 42        # bootstrap CI resampling seed (reproducible)
+  bootstrap_resamples: 1000 # percentile bootstrap resamples
+  train_fraction: 0.6       # per-project train share (>=1 test per project)
+  ratio_clamp: [0.1, 10.0]  # calibration ratio clamp (broad, outlier-safe)
+  rounds: 1                 # repeats per story; mean over rounds is reported
+
+  # Stepwise (forward-nested) ablation configs. Each step adds exactly one
+  # factor over the previous, so a paired comparison isolates that factor:
+  #   task_no_context            -> baseline (task decomposition, no context)
+  #   issue_no_context           -> + whole-issue granularity
+  #   issue_context              -> + developer context (Gap 1)
+  #   issue_context_calibrated   -> + train-only calibration (Gap 2)
+  configs:
+    - name: task_no_context
+      granularity: task
+      include_context: false
+      use_calibration: false
+    - name: issue_no_context
+      granularity: issue
+      include_context: false
+      use_calibration: false
+    - name: issue_context
+      granularity: issue
+      include_context: true
+      use_calibration: false
+    - name: issue_context_calibrated
+      granularity: issue
+      include_context: true
+      use_calibration: true
