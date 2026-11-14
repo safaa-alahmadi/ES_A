@@ -334,56 +334,6 @@ that proves it, and the proof is a single `.venv/bin/python -m pytest -q` run
 (**145 passed**). It is documentation of the machinery, not of any result — no
 numbers appear there until a live run is executed.
 
-## Limitations
-
-- The public dataset has no individual developer metadata, so this
-  implementation treats each source repository as a team unit for the
-  Developer Context Agent. This is a deliberate adaptation, not a limitation
-  of the dataset itself.
-- Concretely: the CSV carries only numeric GitLab project IDs (no repository
-  names), so `developer_or_team_id` is `project-<idproject>` (e.g.
-  `project-10152778`). `data/developer_profiles.json` keeps the original
-  synthetic team profiles untouched and adds per-project entries whose
-  `experience_level` follows a fixed documented rule (backlog-size tercile
-  among the 8 sampled projects: largest third → `senior`, middle → `mid`,
-  smallest → `junior`) and whose `technology_familiarity` cites only
-  objectively observable statistics (issue count, mean/median story points,
-  variance note). No fictional personal biographies are invented for these
-  real open-source projects.
-- Internal field names (`raw_hours`, `estimated_hours`, …) are retained on
-  the NeoDataset path for compatibility with the existing message protocol;
-  on that path they hold story-point values, always labelled as such wherever
-  results are reported.
-- `learn-over-time` reuses the same 40 stories and fixed story-point
-  ground truth each run; raw LLM estimates may vary slightly run to run by
-  normal sampling variance (expected, not suppressed). Demonstrated
-  improvement comes genuinely from the EWMA calibration ratios converging,
-  and `learning_curve.md` reports what actually happened — a
-  noisy-but-generally-improving trend is a legitimate, expected result.
-
-## Tech stack
-
-- Python 3.11+ · Groq API via official `groq` SDK · `python-dotenv` · `pytest` ·
-  `pyyaml` · `pandas` + `huggingface_hub` (one-time NeoDataset sampling only;
-  grading runs offline) · `python-docx` (Word report).
-- Data models: `dataclasses`. JSON: built-in `json`. CLI: built-in `argparse`.
-- API key only via `GROQ_API_KEY` in `.env` (see `.env.example`). On startup,
-  a missing/invalid key produces **one clear, friendly message** — never a
-  stack trace.
-- LLM settings in `config.yaml` (model, temperature, max_tokens, timeout).
-- Tests use a hand-written `FakeLlmClient` — **no network access or API key
-  needed** for `pytest`.
-
-## Sample data & honesty note
-
-`data/user_stories/us1.json`..`us8.json` are 8 sample stories modeled on the
-paper's system (a temperature-monitoring application): email notification on
-out-of-tolerance measurement, monthly report of out-of-tolerance measurements,
-colour-coded measurement history, metric/imperial unit toggle, product graph
-view, import data from offline sensor, temperature trend graph per product,
-multi-language support (EN/DE/SI).
-
-
 
 ## Project layout
 
