@@ -91,7 +91,6 @@ python gui.py
 - **Console** tab shows live streaming logs; **Comparison Report**, **NeoDataset Report**, **Agent Messages** tabs show viewer files refreshed on completion.
 - Buttons are disabled while a command runs; status bar shows command, exit code, and elapsed time.
 
-> The GUI is dependency-free (uses only Python standard library Tkinter).
 
 ## The problem: two gaps from the reference paper
 
@@ -174,15 +173,6 @@ CalibrationMessage`, calling the agents in sequence and writing
 full NeoDataset run, the Learning Agent's `update()` is called once with all
 of that run's `EvaluationMessage`s.
 
-### Workflow diagram
-
-A rendered workflow diagram lives in `workflow_diagram.png` (also
-`workflow_diagram.svg`, the source `workflow_diagram.mmd` editable at
-https://mermaid.live, and the generator `scripts/generate_diagram.py`). It
-shows the full flow — inputs, the five agents, the Gap 1 / Gap 2
-responsibilities, the record-actual feedback loop, the Learning Agent's
-cross-run loop back into the Calibration Agent, and how evaluation compares
-against the paper baselines.
 
 ## Data flow / commands
 
@@ -316,15 +306,6 @@ no-argument run does not silently change the dataset a comparison was built
 on. The experiment accepts the same `--projects` / `--stories-per-project` /
 `--seed` subsetting to shrink a live run during development.
 
-### State hygiene
-
-The experiment **never** reads or writes the agents' mutable runtime state
-(`data/calibration_history.json`, `data/learning_state.json`) — calibration is
-computed in memory from the training split. If an earlier demo/learn run left
-mixed-unit runtime state behind, `reset-state` restores
-`data/calibration_history.json` from its `.bak` and deletes
-`data/learning_state.json`; curated data (actuals, profiles, the NeoDataset
-sample) is never touched.
 
 ### Acceptance checklist
 
